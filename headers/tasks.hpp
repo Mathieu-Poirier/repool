@@ -10,8 +10,8 @@ public:
     std::vector<std::string> times;
     bool repeat_mode;
     std::string repeat_schedule;
-    std::string next_run;
-    std::string excluded_dates;
+    std::string next_run; // 365 state options
+    std::string excluded_dates; // 365 state options
 
     TimeOrder() {
         repeat_mode = false;
@@ -40,6 +40,12 @@ public:
     std::string path;
     int memory_size;
     TimeOrder schedule_ordered;
+
+    Task(){
+        this->path = "";
+        this->memory_size = 0;
+        this->schedule_ordered = TimeOrder();
+    }
 
     Task(const std::string& path, int memory_size, const TimeOrder& schedule_ordered) {
         this->path = path;

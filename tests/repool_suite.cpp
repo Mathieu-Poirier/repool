@@ -1,10 +1,13 @@
 #include "time.hpp"
 #include "tasks.hpp"
+#include "parsing.hpp"
 
 #include <vector>
 #include <assert.h>
 
-int main(){
+// Search if cmake can detect shell errors, looks like no
+
+int main(int argc, char** argv){
     std::vector<std::string> dates = {"2025-06-01", "2025-06-02"};
     std::vector<std::string> times = {"08:00", "14:30"};
 
@@ -25,5 +28,8 @@ int main(){
 
     std::string current_time = get_current_time();
     std::cout << current_time << std::endl;
+
+    parse_command_line_arguments(argc, argv);
+
     return 0;
 }
