@@ -1,0 +1,2 @@
+#define Repool_VERSION_MAJOR @Repool_VERSION_MAJOR@
+#define Repool_VERSION_MINOR @Repool_VERSION_MINOR@
