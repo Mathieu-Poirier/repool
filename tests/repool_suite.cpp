@@ -6,6 +6,7 @@
 #include <assert.h>
 
 // Search if cmake can detect shell errors, looks like no
+// ctest --rerun-failed --output-on-failure to view verbose logs
 
 int main(int argc, char** argv){
     std::vector<std::string> dates = {"2025-06-01", "2025-06-02"};
