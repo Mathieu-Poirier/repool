@@ -62,7 +62,8 @@ inline Task parse_command_line_arguments(int argc, char** argv){
     }
     char left_square_bracket = '[';
     char right_square_bracket = ']';
-    
+
+// Exec time blocks
 // 1st block
 auto l1 = std::find(exec_string.begin(), exec_string.end(), left_square_bracket);
 auto r1 = std::find(l1, exec_string.end(), right_square_bracket);
