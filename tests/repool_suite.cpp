@@ -3,6 +3,7 @@
 #include "parsing.hpp"
 
 #include <vector>
+#include <string>
 #include <assert.h>
 
 // Search if cmake can detect shell errors, looks like no
@@ -15,7 +16,7 @@ int main(int argc, char** argv){
     TimeOrder mySchedule(
         dates,
         times,
-        true,
+        Modes::NoRepeat12, // Fixed
         "weekly",
         "2025-06-01 08:00",
         "2025-06-10"

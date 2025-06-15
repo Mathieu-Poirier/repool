@@ -1,20 +1,27 @@
 #pragma once
-#include <iostream>
 #include <string>
 #include <vector>
 
+enum class Modes {
+    NoRepeat12,
+    Repeat12,
+    NoRepeat24,
+    Repeat24,
+    Size
+};
+    
 // Could update to use own allocator like allocate chunks of heap memory
 class TimeOrder {
 public:
     std::vector<std::string> dates;
     std::vector<std::string> times;
-    bool repeat_mode;
+    Modes repeat_mode;
     std::string repeat_schedule;
     std::string next_run; // 365 state options
     std::string excluded_dates; // 365 state options
 
     TimeOrder() {
-        repeat_mode = false;
+        repeat_mode = Modes::NoRepeat12;
         repeat_schedule = "";
         next_run = "";
         excluded_dates = "";
@@ -22,7 +29,7 @@ public:
 
     TimeOrder(const std::vector<std::string>& dates,
               const std::vector<std::string>& times,
-              bool repeat_mode,
+              Modes repeat_mode,
               const std::string& repeat_schedule,
               const std::string& next_run,
               const std::string& excluded_dates) {
