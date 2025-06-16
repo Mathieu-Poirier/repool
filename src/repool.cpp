@@ -6,6 +6,9 @@
 #include <iostream>
 #include <string>
 
+// input and daemon different like the UI just adds to a file which could be locked if open
+// might have to fork the daemon process that just reads and writes to file but the CLI takes in 
+// Might need some interprocess communicate (pipes)
 int main(int argc, char** argv){
     std::cout << "Version number: " << Repool_VERSION_MAJOR << std::endl;
     std::string current_time = get_current_time();
