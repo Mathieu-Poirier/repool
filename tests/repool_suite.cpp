@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <assert.h>
+#include <iostream>
 
 // Search if cmake can detect shell errors, looks like no
 // ctest --rerun-failed --output-on-failure to view verbose logs
@@ -12,6 +13,7 @@
 int main(int argc, char** argv){
     std::vector<std::string> dates = {"2025-06-01", "2025-06-02"};
     std::vector<std::string> times = {"08:00", "14:30"};
+    std::vector<std::string> excluded = {"2025-06-01", "2025-06-02"};
 
     TimeOrder mySchedule(
         dates,
@@ -19,11 +21,10 @@ int main(int argc, char** argv){
         Modes::NoRepeat12, // Fixed
         "weekly",
         "2025-06-01 08:00",
-        "2025-06-10"
+        excluded
     );
 
-    Task task1("backup.sh", 512, mySchedule);
-    assert(task1.memory_size == 512 && "CONSTRUCTOR ERROR: memory_size initialization fault");
+    Task task1("backup.sh", mySchedule);
     assert(task1.schedule_ordered.dates.at(1) == "2025-06-02" && "CONSTRUCTOR ERROR: schedule_ordered.dates initialization fault");
     // Failing test
     // assert(task1.schedule_ordered.dates.at(0) == "2025-06-02" && "CONSTRUCTOR ERROR: schedule_ordered.dates initialization fault");
@@ -31,7 +32,9 @@ int main(int argc, char** argv){
     std::string current_time = get_current_time();
     std::cout << current_time << std::endl;
 
-    parse_command_line_arguments(argc, argv);
+    Task parsed_task = parse_command_line_arguments(argc, argv);
+    std::cout << parsed_task.path << std::endl;
+    std::cout << parsed_task.schedule_ordered.repeat_schedule << std::endl;
 
     return 0;
 }
