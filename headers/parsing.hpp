@@ -9,6 +9,7 @@
 // Should maybe add execDate
 inline constexpr int MAX_ARGS = 5;
 
+// need to split this in the producer process and throw std::runtime_error(string literal)
 inline Task parse_command_line_arguments(int argc, char** argv){
     const std::vector<std::string> arguments(argv, argv + argc);
     const std::vector<std::string> keywords{"job", "exec", "repeat", "exclude"};
@@ -120,7 +121,7 @@ inline Task parse_command_line_arguments(int argc, char** argv){
     std::string::iterator it = time_string.begin();
 
     // parsing time list but while(true) is bad practice because of bounds
-    
+    // TODO: make a general split function to clean up code
     while (it != time_string.end()) {
         if (*it == ',') {
             // std::cout << "Split occurred at comma. Pushing: \"" << single_time_container << "\"\n";
