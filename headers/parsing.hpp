@@ -1,6 +1,8 @@
 #pragma once
 #include "tasks.hpp"
 #include <iostream>
+#include <iterator>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -13,29 +15,27 @@ inline constexpr int MAX_ARGS = 5;
 inline Task parse_command_line_arguments(int argc, char** argv){
     const std::vector<std::string> arguments(argv, argv + argc);
     const std::vector<std::string> keywords{"job", "exec", "repeat", "exclude"};
-    std::cout << "BEGIN: Parsing command line arguments" << std::endl;
-    
-    std::string path;
-    std::string exec_string;
-    std::string repeat_string;
-    std::string exclude_string;
+    // std::cout << "BEGIN: Parsing command line arguments" << std::endl;
     
     Task prepped_task;
     TimeOrder time_order;
-    const std::string too_many_args_exception = "EXCEPTION: Too many arguments passed to repool. Likely fix the uneeded spaces in the arguments.";
-    const std::string zero_args_exception = "EXCEPTION: Zero arguments passed therefore input is ill-formed.";
-    const std::string ill_formed_mode_exception = "EXCEPTION: Repeat mode option and 12h or 24h mode option is ill-formed.";
     
-    std::cout << "Argument number passed: " << argc << " " << "Max arguments: " << MAX_ARGS << std::endl;
+    // std::cout << "Argument number passed: " << argc << " " << "Max arguments: " << MAX_ARGS << std::endl;
     if(argc > MAX_ARGS){
-        throw too_many_args_exception;
+        throw std::runtime_error("EXCEPTION: Too many arguments passed to repool. Likely fix the uneeded spaces in the arguments.");
     }
     if(argc == 1){ // Might replace later
-        throw zero_args_exception;
+        throw std::runtime_error("EXCEPTION: Zero arguments passed therefore input is ill-formed.");
     }
     // How do we handle backslash
+    // Might need to move state in here
+    constexpr char equality_character = '=';
+    std::string path("");
+    std::string exec_string("");
+    std::string repeat_string("");
+    std::string exclude_string("");
+    
     for (int i = 1; i < argc and argc <= MAX_ARGS; i++){
-        char equality_character = '=';
         // std::cout << i << std::endl;
         auto equality_token = std::find(arguments.at(i).begin(), arguments.at(i).end(), equality_character);
         if(equality_token != arguments.at(i).end()){
@@ -66,13 +66,15 @@ inline Task parse_command_line_arguments(int argc, char** argv){
             }
         }
     }
-    // Maybe you cannot pass specific dates with a repeat mode
+    
+    // Maybe you cannot pass exact dates with a repeat mode
 
-    char left_square_bracket = '[';
-    char right_square_bracket = ']';
+    constexpr char left_square_bracket = '[';
+    constexpr char right_square_bracket = ']';
 
     // Exec time blocks
     // 1st block
+    // Need to make checks to see if they aren't empty
     auto l1 = std::find(exec_string.begin(), exec_string.end(), left_square_bracket);
     auto r1 = std::find(l1, exec_string.end(), right_square_bracket);
     std::string mode_state_string = exec_string.substr(std::distance(exec_string.begin(), l1) + 1,
@@ -95,9 +97,15 @@ inline Task parse_command_line_arguments(int argc, char** argv){
 
     if(mode_state_string == "NoRepeat12"){
         mode_state = Modes::NoRepeat12;
+        if(!repeat_string.empty()){
+            throw std::runtime_error("NoRepeat12 mode enabled but repeat argument passed anyway. Do not set a repeat schedule if you don't intend to repeat");
+        }
     }
     else if(mode_state_string == "NoRepeat24") {
         mode_state = Modes::NoRepeat24;
+        if(!repeat_string.empty()){
+            throw std::runtime_error("NoRepeat24 mode enabled but repeat argument passed anyway. Do not set a repeat schedule if you don't intend to repeat");
+        }
     }
     else if(mode_state_string == "Repeat12") {
         mode_state = Modes::Repeat12;
@@ -106,12 +114,45 @@ inline Task parse_command_line_arguments(int argc, char** argv){
         mode_state = Modes::Repeat24;
     }
     else{
-        throw ill_formed_mode_exception;
+        throw std::runtime_error("EXCEPTION: Repeat mode option is ill-formed: NoRepeat12, NoRepeat24, Repeat12, Repeat24 are possible options.");
     }
+    
     time_order.repeat_mode = mode_state;
+    
+    // If the mode is Repeat12 or NoRepeat12 we have to check if every time has an AM or PM suffix
+    // We also have to add date validation
     if(mode_state == Modes::Repeat12 or mode_state == Modes::Repeat24){
        time_order.repeat_schedule = repeat_string;
-       // Re create the excluded dates in a vector
+    
+        std::string single_time_container;
+
+        if(!exclude_string.empty()){
+            auto l0 = std::find(exclude_string.begin(), exclude_string.end(), left_square_bracket);
+            auto r0 = std::find(l0, exclude_string.end(), right_square_bracket);
+            exclude_string = exclude_string.substr(std::distance(exclude_string.begin(), l0) + 1, std::distance(l0, r0) - 1);  
+        }
+        std::string::iterator eit = exclude_string.begin();   
+       
+        // Re create the excluded dates in a vector
+        while (eit != exclude_string.end()) {
+            if (*eit == ',') {
+                // std::cout << "Split occurred at comma. Pushing: \"" << single_time_container << "\"\n";
+                time_order.excluded_dates.push_back(single_time_container);
+                single_time_container.clear();
+            } else {
+                // std::cout << "Reading character: '" << *it << "'\n";
+                single_time_container += *eit;
+            }
+            ++eit;
+        }
+
+        // After loop: push remaining part if any
+        if (!single_time_container.empty()) {
+            // std::cout << "End of string reached. Final push: \"" << single_time_container << "\"\n";
+            time_order.excluded_dates.push_back(single_time_container);
+        }
+
+
     }
 
     // Add date and times into vectors of the object
@@ -168,6 +209,10 @@ inline Task parse_command_line_arguments(int argc, char** argv){
 
     for(std::string date : time_order.dates){
         std::cout << "Date parsed: " << date << std::endl;
+    }
+
+    for(std::string edate : time_order.excluded_dates){
+        std::cout << "Excluded date parsed: " << edate << std::endl;
     }
 
     prepped_task.path = path;

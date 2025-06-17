@@ -4,6 +4,7 @@
 #include "parsing.hpp"
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 // input and daemon different like the UI just adds to a file which could be locked if open
@@ -16,8 +17,8 @@ int main(int argc, char** argv){
     try{
         parse_command_line_arguments(argc, argv); 
     }
-    catch(std::string error){
-        std::cout << error << std::endl;
+    catch(std::runtime_error error){
+        std::cout << error.what() << std::endl;
         return 1;
     }
     return 0;
