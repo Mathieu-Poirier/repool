@@ -29,3 +29,5 @@ add_test(NAME AllFieldsPermutation1 COMMAND repool_tests execTime=5 job=home/src
 add_test(NAME AllFieldsPermutation2 COMMAND repool_tests job=home/src mode=5 excludedDates=5 execTime=5)
 add_test(NAME RunsWith<>Token COMMAND repool_tests job=home/<src> mode=5 excludedDates=5 execTime=<5.0>)
 add_test(NAME NewCorrectForm COMMAND repool_tests job=home/static exec=[NoRepeat12][12:00AM][Jun-15-2026] repeat=weekly)
+add_test(NAME Invalid12h COMMAND repool_tests job=home/static exec=[NoRepeat12][12:00][Jun-15-2026] repeat=weekly)
+add_test(NAME Invalid12h_2 COMMAND repool_tests job=home/static exec=[NoRepeat12][13:00AM][Jun-15-2026] repeat=weekly)
