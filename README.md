@@ -35,7 +35,7 @@ make check
 
 Right now there is no standard API for the scheduler but the planned API will be:
 ```
-repool job=/home/myjob exec=[Repeat12][12:00AM][Nov-4-20XX] repeat=[2 weeks] exclude=[Jul-5-20XX]
+repool job=/home/myjob exec=[Repeat12][12:00AM][Nov-4-20XX] repeat=[2-weeks] exclude=[Jul-5-20XX]
 ```
 
 ## Development Goals
