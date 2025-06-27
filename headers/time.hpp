@@ -1,10 +1,10 @@
 #pragma once
-#include <ctime>
 #include <string>
+#include <chrono>
+#include <ctime>
 
-inline std::string get_current_time() {
-  time_t timestamp;
-  time(&timestamp);
-  const char *time_as_string = ctime(&timestamp);
-  return time_as_string;
-}
+std::string get_current_time();
+bool is_valid_date(int y, unsigned m, unsigned d);
+
+// Declarations for time.cpp
+

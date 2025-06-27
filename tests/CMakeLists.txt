@@ -1,5 +1,0 @@
-set(CMAKE_CXX_STANDARD_REQUIRED 26)
-cmake_minimum_required(VERSION 3.10)
-add_executable(repool_tests repool_suite.cpp)
-target_link_libraries(repool_tests PUBLIC Headers)
-target_include_directories(repool_tests PUBLIC "${PROJECT_SOURCE_DIR}/headers")

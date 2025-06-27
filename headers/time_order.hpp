@@ -1,19 +1,16 @@
 #pragma once
-#include <string>
 #include <vector>
+#include <string>
+#include "../headers/modes.hpp"
 
-enum class Modes { NoRepeat12, Repeat12, NoRepeat24, Repeat24, Size };
-
-// Could update to use own allocator like allocate chunks of heap memory
-// Refactor to just a single class probably
 class TimeOrder {
- public:
+public:
   std::vector<std::string> dates;
   std::vector<std::string> times;
   Modes repeat_mode;
   std::string repeat_schedule;
-  std::string next_run;                     // 365 state options
-  std::vector<std::string> excluded_dates;  // 365 state options
+  std::string next_run;                    // 365 state options
+  std::vector<std::string> excluded_dates; // 365 state options
 
   TimeOrder() {
     dates = {};
@@ -34,21 +31,5 @@ class TimeOrder {
     this->repeat_schedule = repeat_schedule;
     this->next_run = next_run;
     this->excluded_dates = excluded_dates;
-  }
-};
-
-class Task {
- public:
-  std::string path;
-  TimeOrder schedule_ordered;
-
-  Task() {
-    this->path = "";
-    this->schedule_ordered = TimeOrder();
-  }
-
-  Task(const std::string &path, const TimeOrder &schedule_ordered) {
-    this->path = path;
-    this->schedule_ordered = schedule_ordered;
   }
 };
