@@ -140,8 +140,11 @@ std::vector<std::string> parse_dates(const std::string &date_str,
 }
 
 // Should maybe add execDate
-inline constexpr int MAX_ARGS = 5;
-inline std::regex time12h_regex(R"(^([1-9]|1[0-2]):[0-5][0-9](AM|PM)$)");
+constexpr int MAX_ARGS = 5;
+std::regex time12h_regex(R"(^([1-9]|1[0-2]):[0-5][0-9](AM|PM)$)");
+std::regex time24h_regex(R"(^(?:0|[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$)");
+
+
 
 // need to split this in the producer process and throw
 // std::runtime_error(string literal)
@@ -229,6 +232,24 @@ Task parse_command_line_arguments(int argc, char **argv) {
   std::string date_string = (blocks.size() == 3) ? blocks[2] : "";
 
   Modes mode_state;
+
+  // Repeat parsing: repeat=2-weeks
+  // everything before std::find('-')
+  
+  // Implement:
+  std::string validate_repeat_string();
+  
+  // get current time -> check if jobs of passed -> if they have then run them -> if on a repeat schedule then compute next run time, if 1 year then no change
+  
+
+  // Also have the problem of what we define Repeat and NoRepeat as because we can reach the same date and time again
+  // Idea: maybe Repeat does not include a date list but days of the week and time
+  // NoRepeat is for exact date and time (maybe pairs actually? like a queue system)
+  // Repeat is for time and days of the week but can exclude specific undesired dates
+  
+  
+  // Problem: When we have specific dates and times do the times we pass in apply to all or only some of the dates we pass in? Thinking maybe all by default but probably bad design.
+  
 
   // TODO: Check for exclude string
 

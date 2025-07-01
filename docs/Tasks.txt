@@ -1,5 +1,5 @@
 - Date validation X
-- Date uniqueness
+- Date uniqueness (maybe sets or maps for date and time then)
 - make sure hours can't be more than 24h in 24h mode maybe with regex
 - Time uniqueness
 - Add id field
