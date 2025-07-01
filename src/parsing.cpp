@@ -139,6 +139,21 @@ std::vector<std::string> parse_dates(const std::string &date_str,
   return dates;
 }
 
+// Add all the other days of the week
+void validate_repeat_string(const std::string repeat_string){
+    std::vector<std::string> day_of_the_week = split_string(repeat_string, ',');
+    
+    for(auto i: day_of_the_week){
+      if(i != "Mon"){
+        
+      }
+      else{
+        throw std::runtime_error("Repeat scheduler cannot find day of the week: " + i);
+      }
+    }
+}
+  
+
 // Should maybe add execDate
 constexpr int MAX_ARGS = 5;
 std::regex time12h_regex(R"(^([1-9]|1[0-2]):[0-5][0-9](AM|PM)$)");
@@ -237,8 +252,6 @@ Task parse_command_line_arguments(int argc, char **argv) {
   // everything before std::find('-')
   
   // Implement:
-  std::string validate_repeat_string();
-  
   // get current time -> check if jobs of passed -> if they have then run them -> if on a repeat schedule then compute next run time, if 1 year then no change
   
 
@@ -246,6 +259,9 @@ Task parse_command_line_arguments(int argc, char **argv) {
   // Idea: maybe Repeat does not include a date list but days of the week and time
   // NoRepeat is for exact date and time (maybe pairs actually? like a queue system)
   // Repeat is for time and days of the week but can exclude specific undesired dates
+
+  // Maybe for NoRepeat we specify Key:Value pairs to run in a queue
+  // For Repeat we have to specify time list and day of the Week list
   
   
   // Problem: When we have specific dates and times do the times we pass in apply to all or only some of the dates we pass in? Thinking maybe all by default but probably bad design.
