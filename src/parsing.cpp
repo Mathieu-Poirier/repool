@@ -11,6 +11,7 @@
 #include "../headers/task.hpp"
 #include "../headers/time.hpp"
 #include "../headers/time_order.hpp"
+#include "../headers/week_days.hpp"
 
 enum Months {
   OFFSET,
@@ -102,8 +103,8 @@ std::vector<std::string> extract_bracket_blocks(const std::string &input) {
     pos = r + 1;
   }
 
-  if (blocks.size() < 2 || blocks.size() > 3)
-    throw std::runtime_error("Expected [Mode][Times] or [Mode][Times][Dates]");
+  if (blocks.size() < 1 || blocks.size() > 3)
+    throw std::runtime_error("Extracting blocks failed: expected [Mode][Times] or [Mode][Times][Dates] or [Repeat Schedule]");
 
   return blocks;
 }
@@ -140,21 +141,41 @@ std::vector<std::string> parse_dates(const std::string &date_str,
 }
 
 // Add all the other days of the week
-void validate_repeat_string(const std::string repeat_string){
+Day_Options parse_repeat_string(const std::string &repeat_string){
     std::vector<std::string> day_of_the_week = split_string(repeat_string, ',');
+    Day_Options day_choices;
     
     for(auto i: day_of_the_week){
-      if(i != "Mon"){
-        
+      if(i == "Mon"){
+        day_choices.Monday = true;
+      }
+      else if(i == "Tue"){
+        day_choices.Tuesday = true;
+      }
+      else if(i == "Wed"){
+        day_choices.Wednesday= true;
+      }
+      else if(i == "Thu"){
+        day_choices.Thursday = true;
+      }
+      else if(i == "Fri"){
+        day_choices.Friday = true;
+      }
+      else if(i == "Sat"){
+        day_choices.Saturday = true;
+      }
+      else if(i == "Sun"){
+        day_choices.Sunday = true;
       }
       else{
         throw std::runtime_error("Repeat scheduler cannot find day of the week: " + i);
       }
     }
+    return day_choices;
 }
   
 
-// Should maybe add execDate
+// Should maybe add scheduleDate
 constexpr int MAX_ARGS = 5;
 std::regex time12h_regex(R"(^([1-9]|1[0-2]):[0-5][0-9](AM|PM)$)");
 std::regex time24h_regex(R"(^(?:0|[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$)");
@@ -165,7 +186,7 @@ std::regex time24h_regex(R"(^(?:0|[1-9]|1[0-9]|2[0-3]):[0-5][0-9]$)");
 // std::runtime_error(string literal)
 Task parse_command_line_arguments(int argc, char **argv) {
   const std::vector<std::string> arguments(argv, argv + argc);
-  const std::vector<std::string> keywords{"job", "exec", "repeat", "exclude"};
+  const std::vector<std::string> keywords{"job", "schedule", "repeat", "exclude"};
   // std::cout << "BEGIN: Parsing command line arguments" << std::endl;
 
   Task prepped_task;
@@ -185,7 +206,7 @@ Task parse_command_line_arguments(int argc, char **argv) {
   // Might need to move state in here
   constexpr char equality_character = '=';
   std::string path("");
-  std::string exec_string("");
+  std::string schedule_string("");
   std::string repeat_string("");
   std::string exclude_string("");
 
@@ -195,7 +216,7 @@ Task parse_command_line_arguments(int argc, char **argv) {
                                     arguments.at(i).end(), equality_character);
     if (equality_token != arguments.at(i).end()) {
       int equality_position =
-          std::distance(arguments.at(i).begin(), equality_token);
+      std::distance(arguments.at(i).begin(), equality_token);
       std::string kwarg = arguments.at(i).substr(0, equality_position);
       // Test if this works
       std::cout << "Keyword argument found: " << kwarg
@@ -208,19 +229,19 @@ Task parse_command_line_arguments(int argc, char **argv) {
         path = arguments.at(i).substr(equality_position + 1, std::string::npos);
       }
       // Dates should be like
-      // exec=[NoRepeat24][12:30AM,13:45][Jun-15-2025,Jun-16-2025,@Today] This
+      // schedule=[NoRepeat12][12:30AM][Jun-15-2025,Jun-16-2025,@Today] This
       // keyword sets the mode
       if (kwarg == keywords[1]) {
-        std::cout << "exec schedule selected: "
+        std::cout << "schedule selected: "
                   << arguments.at(i).substr(equality_position + 1,
                                             std::string::npos)
                   << std::endl;
-        exec_string =
+        schedule_string =
             arguments.at(i).substr(equality_position + 1, std::string::npos);
       }
       // Mode actually changes how things are parsed
       // Mode and time? -> this should maybe be changed to repeat schedule
-      // instead of mode because then it'spresence encodes the mode Should only
+      // instead of mode because then it's presence encodes the mode. Should only
       // work if repeat state enabled
       if (kwarg == keywords[2]) {
         std::cout << "repeat schedule selected: "
@@ -241,7 +262,7 @@ Task parse_command_line_arguments(int argc, char **argv) {
     }
   }
 
-  auto blocks = extract_bracket_blocks(exec_string);
+  auto blocks = extract_bracket_blocks(schedule_string);
   std::string mode_state_string = blocks[0];
   std::string time_string = blocks[1];
   std::string date_string = (blocks.size() == 3) ? blocks[2] : "";
@@ -277,6 +298,9 @@ Task parse_command_line_arguments(int argc, char **argv) {
     if (date_string.empty()) {
       throw std::runtime_error("NoRepeat12 requires exact dates.");
     }
+    if(time_string.empty()){
+      throw std::runtime_error("NoRepeat12 requires exact times.");
+    }
   } else if (mode_state_string == "NoRepeat24") {
     mode_state = Modes::NoRepeat24;
     if (!repeat_string.empty()) {
@@ -285,15 +309,30 @@ Task parse_command_line_arguments(int argc, char **argv) {
     if (date_string.empty()) {
       throw std::runtime_error("NoRepeat24 requires exact dates.");
     }
+    if(time_string.empty()){
+      throw std::runtime_error("NoRepeat12 requires exact times.");
+    }
   } else if (mode_state_string == "Repeat12") {
     mode_state = Modes::Repeat12;
     if (!date_string.empty()) {
       throw std::runtime_error("Repeat12 mode does not accept a date block.");
     }
+    if (repeat_string.empty()) {
+        throw std::runtime_error("Repeat12 mode does need a repeat schedule.");
+    }
+    if (time_string.empty()) {
+      throw std::runtime_error("Repeat12 mode does need a time block.");
+    }
   } else if (mode_state_string == "Repeat24") {
     mode_state = Modes::Repeat24;
     if (!date_string.empty()) {
       throw std::runtime_error("Repeat24 mode does not accept a date block.");
+    }
+    if (repeat_string.empty()) {
+        throw std::runtime_error("Repeat24 mode does need a repeat schedule.");
+    }
+    if (time_string.empty()) {
+      throw std::runtime_error("Repeat24 mode does need a time block.");
     }
   } else {
     throw std::runtime_error("Invalid repeat mode: " + mode_state_string);
@@ -312,16 +351,39 @@ Task parse_command_line_arguments(int argc, char **argv) {
         }
       }
     }
+    else if (mode_state == Modes::NoRepeat24){
+        for (const std::string &time : time_order.times) {
+        if (!std::regex_match(time, time24h_regex)) {
+          throw std::runtime_error("Invalid 24h time format: " + time);
+        }
+      }
+    }
   } else if (mode_state == Modes::Repeat12 || mode_state == Modes::Repeat24) {
     time_order.times = split_string(time_string, ',');
     time_order.dates =
         parse_dates(date_string, false); // Should be empty or ignored
-    time_order.repeat_schedule = repeat_string;
+    
+    std::vector<std::string> repeat_block = extract_bracket_blocks(repeat_string);
+    std::cout << repeat_block.at(0) << std::endl;
+    if(repeat_block.size() > 1){
+      throw std::runtime_error("repeat= option needs only one bracket block [Mon,Tue,Wed] for example");
+    }
+    Day_Options day_choices = parse_repeat_string(repeat_block.at(0));
+    time_order.repeat_schedule = day_choices;
+    
 
     if (mode_state == Modes::Repeat12) {
       for (const std::string &time : time_order.times) {
         if (!std::regex_match(time, time12h_regex)) {
           throw std::runtime_error("Invalid 12h time format: " + time);
+        }
+      }
+    }
+    
+    else if (mode_state == Modes::Repeat24){
+        for (const std::string &time : time_order.times) {
+        if (!std::regex_match(time, time24h_regex)) {
+          throw std::runtime_error("Invalid 24h time format: " + time);
         }
       }
     }
@@ -354,8 +416,12 @@ Task parse_command_line_arguments(int argc, char **argv) {
     std::cout << "Excluded date parsed: " << edate << std::endl;
   }
 
+  // std::cout << time_order.repeat_schedule.Monday << std::endl;
+  
+
   prepped_task.path = path;
   prepped_task.schedule_ordered = time_order;
+  std::cout << "Task id: " << prepped_task.id << std::endl;
 
   // Need to make a task object from the info?
   return prepped_task;

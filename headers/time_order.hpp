@@ -2,13 +2,14 @@
 #include <vector>
 #include <string>
 #include "../headers/modes.hpp"
+#include "../headers/week_days.hpp"
 
 class TimeOrder {
 public:
   std::vector<std::string> dates;
   std::vector<std::string> times;
   Modes repeat_mode;
-  std::string repeat_schedule;
+  Day_Options repeat_schedule;
   std::string next_run;                    // 365 state options
   std::vector<std::string> excluded_dates; // 365 state options
 
@@ -17,13 +18,13 @@ public:
     times = {};
     excluded_dates = {};
     repeat_mode = Modes::NoRepeat12;
-    repeat_schedule = "";
+    repeat_schedule = Day_Options();
     next_run = "";
   }
 
   TimeOrder(const std::vector<std::string> &dates,
             const std::vector<std::string> &times, Modes repeat_mode,
-            const std::string &repeat_schedule, const std::string &next_run,
+            const Day_Options &repeat_schedule, const std::string &next_run,
             const std::vector<std::string> &excluded_dates) {
     this->dates = dates;
     this->times = times;

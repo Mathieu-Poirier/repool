@@ -3,16 +3,15 @@
 
 class Task {
 public:
-  std::string path;
-  TimeOrder schedule_ordered;
+    static inline int next_id = 0; // static member to track next ID
+    int id;                        // instance ID
+    std::string path;
+    TimeOrder schedule_ordered;
 
-  Task() {
-    this->path = "";
-    this->schedule_ordered = TimeOrder();
-  }
+    Task() : id(next_id++), path(""), schedule_ordered() {}
 
-  Task(const std::string &path, const TimeOrder &schedule_ordered) {
-    this->path = path;
-    this->schedule_ordered = schedule_ordered;
-  }
+    Task(const std::string &path, const TimeOrder &schedule_ordered)
+        : id(next_id++), path(path), schedule_ordered(schedule_ordered) {}
 };
+
+

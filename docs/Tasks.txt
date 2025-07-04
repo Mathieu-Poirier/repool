@@ -1,9 +1,9 @@
 - Date validation X
 - Date uniqueness (maybe sets or maps for date and time then)
-- make sure hours can't be more than 24h in 24h mode maybe with regex
+- make sure hours can't be more than 24h in 24h mode maybe with regex X
 - Time uniqueness
-- Add id field
-- Repeat schedule validation
+- Add id field X
+- Repeat schedule validation X
 - Split to consumer and producer process
 - Have consumer iterate through the file and parse each line correctly then replace the next_run field with the correct time and date according to the repeat schedule
 - Have producer write to a known file in a serialized format
